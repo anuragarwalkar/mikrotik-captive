@@ -1,0 +1,16 @@
+{
+  "name": "mikrotik-captive-portal-server",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.cjs",
+  "scripts": {
+    "start": "node index.cjs",
+    "dev":   "node --watch index.cjs"
+  },
+  "dependencies": {
+    "cors":    "^2.8.5",
+    "dotenv":  "^16.4.5",
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1"
+  }
+}
