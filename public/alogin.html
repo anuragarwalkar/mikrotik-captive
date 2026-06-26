@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="-1">
+  <title>Access Granted — MikroTik HotSpot</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    function init() {
+      $(if popup == 'true')
+      open('$(link-status)', 'hotspot_status',
+        'toolbar=0,location=0,directories=0,status=0,menubar=0,resizable=1,width=320,height=270');
+      $(endif)
+      setTimeout(function () {
+        location.href = unescape('$(link-redirect-esc)');
+      }, 2200);
+    }
+  </script>
+</head>
+<body onload="init()">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <header class="page-header">
+    <span class="header-tag">RouterOS</span>
+    <span class="status-dot"></span>
+    <span class="header-tag">HotSpot</span>
+  </header>
+
+  <div class="card">
+
+    <!-- Success icon -->
+    <div class="icon-ring green">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+        <path d="M5 13l4 4L19 7" stroke="#00ff88" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div style="text-align:center;">
+      <p class="title green">ACCESS GRANTED</p>
+      <p class="subtitle">$(username)</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+
+    <p style="font-size:.75rem;color:rgba(255,255,255,.28);text-align:center;">
+      Connecting to network&hellip;
+    </p>
+    <p style="font-size:.68rem;color:rgba(255,255,255,.16);text-align:center;">
+      If not redirected automatically,
+      <a href="$(link-redirect)" style="color:rgba(0,212,255,.5);">click here</a>
+    </p>
+
+  </div>
+
+  <p class="footer-note">POWERED BY MIKROTIK ROUTEROS &middot; GOOGLE OAUTH 2.0</p>
+</body>
+</html>

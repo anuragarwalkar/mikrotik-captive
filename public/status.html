@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  $(if refresh-timeout)
+  <meta http-equiv="refresh" content="$(refresh-timeout-secs)">
+  $(endif)
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="-1">
+  <title>Session Status — MikroTik HotSpot</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    $(if advert-pending == 'yes')
+    var adPopup = '';
+    function focusAdvert() { if (window.focus) adPopup.focus(); }
+    function openAdvert() {
+      adPopup = open('$(link-advert)', 'hotspot_advert', '');
+      setTimeout(function () { focusAdvert(); }, 1000);
+    }
+    $(endif)
+    function openLogout() {
+      if (window.name !== 'hotspot_status') return true;
+      open('$(link-logout)', 'hotspot_logout',
+        'toolbar=0,location=0,directories=0,status=0,menubar=0,resizable=1,width=320,height=320');
+      window.close();
+      return false;
+    }
+  </script>
+</head>
+<body class="popup-mode" $(if advert-pending == 'yes') onload="openAdvert()" $(endif)>
+
+  <div class="card">
+
+    <div style="display:flex;align-items:center;gap:.75rem;width:100%;">
+      <span class="status-dot"></span>
+      <span class="title green">CONNECTED</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <table class="stats">
+      $(if login-by != 'mac')
+      <tr><td>User</td>          <td>$(username)</td></tr>
+      $(endif)
+      <tr><td>IP Address</td>    <td>$(ip)</td></tr>
+      <tr><td>Uptime</td>        <td>$(uptime)</td></tr>
+      <tr><td>Data In / Out</td> <td>$(bytes-in-nice) / $(bytes-out-nice)</td></tr>
+      $(if session-time-left)
+      <tr><td>Time Left</td>     <td>$(session-time-left)</td></tr>
+      $(endif)
+      $(if blocked == 'yes')
+      <tr><td>Status</td><td>
+        <a href="$(link-advert)" target="hotspot_advert" style="color:#facc15;">
+          Ad Required
+        </a></td></tr>
+      $(elif refresh-timeout)
+      <tr><td>Refresh</td>       <td>$(refresh-timeout)</td></tr>
+      $(endif)
+    </table>
+
+    $(if login-by-mac != 'yes')
+    <div class="divider"></div>
+    <form action="$(link-logout)" name="logout" onsubmit="return openLogout()">
+      <button type="submit" class="btn btn-red">Log Out</button>
+    </form>
+    $(endif)
+
+  </div>
+
+</body>
+</html>

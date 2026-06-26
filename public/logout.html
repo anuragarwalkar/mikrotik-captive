@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="-1">
+  <title>Session Ended — MikroTik HotSpot</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    function openLogin() {
+      if (window.name !== 'hotspot_logout') return true;
+      open('$(link-login)', '_blank', '');
+      window.close();
+      return false;
+    }
+  </script>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <header class="page-header">
+    <span class="header-tag">RouterOS</span>
+    <span class="status-dot offline"></span>
+    <span class="header-tag">HotSpot</span>
+  </header>
+
+  <div class="card">
+
+    <!-- Logout icon -->
+    <div class="icon-ring red">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
+              stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div style="text-align:center;">
+      <p class="title red">SESSION ENDED</p>
+      <p class="subtitle">You have been logged out</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <table class="stats">
+      <tr><td>Username</td>     <td>$(username)</td></tr>
+      <tr><td>IP Address</td>   <td>$(ip)</td></tr>
+      <tr><td>MAC Address</td>  <td>$(mac)</td></tr>
+      <tr><td>Session Time</td> <td>$(uptime)</td></tr>
+      $(if session-time-left)
+      <tr><td>Time Left</td>    <td>$(session-time-left)</td></tr>
+      $(endif)
+      <tr><td>Data Up / Down</td><td>$(bytes-in-nice) / $(bytes-out-nice)</td></tr>
+    </table>
+
+    <div class="divider"></div>
+
+    <form action="$(link-login)" name="login" onsubmit="return openLogin()">
+      <button type="submit" class="btn btn-cyan">Log In Again</button>
+    </form>
+
+  </div>
+
+  <p class="footer-note">POWERED BY MIKROTIK ROUTEROS &middot; GOOGLE OAUTH 2.0</p>
+</body>
+</html>
