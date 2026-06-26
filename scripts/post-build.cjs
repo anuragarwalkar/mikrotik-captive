@@ -44,16 +44,17 @@ function copyDir(src, dst) {
 const indexSrc = path.join(DIST, 'index.html')
 const loginDst = path.join(DIST, 'login.html')
 
-if (fs.existsSync(indexSrc)) {
-  fs.unlinkSync(indexSrc)
-  console.log('  ✓  dist/index.html removed (login.html already provided by public/)')
-}
-
 if (!fs.existsSync(loginDst)) {
   console.error('ERROR: dist/login.html not found. Ensure public/login.html exists.')
   process.exit(1)
 }
+
+// Replace the React SPA index.html with the static login page so that
+// `vite preview` (localhost:4173/) shows the login page correctly.
+// On the router, MikroTik only uses login.html — index.html is ignored.
+fs.copyFileSync(loginDst, indexSrc)
 console.log('  ✓  dist/login.html is ready (static, from public/)')
+console.log('  ✓  dist/index.html ← login.html (for local preview)')
 
 // ── 2. Copy unchanged MikroTik support files from hotspot/ reference ─────────
 
