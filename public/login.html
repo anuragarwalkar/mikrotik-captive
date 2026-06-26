@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="-1">
+  <title>Network Access — MikroTik HotSpot</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Google button wrapper — centres the iframe Google renders */
+    #g-btn-wrap {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    /* Status message shown while verifying */
+    #status-msg {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.45);
+      text-align: center;
+      min-height: 1.2em;
+    }
+
+    /* Error box (populated by MikroTik $(error) or JS) */
+    #error-box {
+      width: 100%;
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.35);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      font-size: 0.78rem;
+      color: #f87171;
+      text-align: center;
+      display: none;
+    }
+
+    /* Spinner shown after Google auth while submitting */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(0,212,255,0.2);
+      border-top-color: #00d4ff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- ambient orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <!-- page header -->
+  <header class="page-header">
+    <span class="header-tag">RouterOS</span>
+    <span class="status-dot offline" id="status-dot"></span>
+    <span class="header-tag">HotSpot</span>
+  </header>
+
+  <!-- main card -->
+  <div class="card">
+
+    <!-- router / network icon -->
+    <div class="icon-ring cyan">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="8" width="20" height="8" rx="2"
+              stroke="#00d4ff" stroke-width="1.6"/>
+        <circle cx="6"  cy="12" r="1" fill="#00d4ff"/>
+        <circle cx="10" cy="12" r="1" fill="#00d4ff"/>
+        <circle cx="14" cy="12" r="1" fill="#00d4ff"/>
+        <line x1="18" y1="12" x2="20" y2="12"
+              stroke="#00d4ff" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="12" y1="8" x2="12" y2="5"
+              stroke="#00d4ff" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="8"  y1="5" x2="16" y2="5"
+              stroke="#00d4ff" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div style="text-align:center">
+      <p class="title cyan">NETWORK ACCESS</p>
+      <p class="subtitle">Sign in with Google to connect</p>
+    </div>
+
+    <!-- MikroTik error (populated server-side when login fails) -->
+    <div id="error-box">$(error)</div>
+
+    <div class="divider"></div>
+
+    <!-- Google Sign-In button (rendered by GIS library) -->
+    <div id="g-btn-wrap">
+      <div id="g_id_onload"
+           data-client_id="REPLACE_WITH_YOUR_GOOGLE_CLIENT_ID"
+           data-callback="handleGoogleCredential"
+           data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-shape="rectangular"
+           data-theme="filled_black"
+           data-text="signin_with"
+           data-size="large"
+           data-logo_alignment="left"
+           data-width="320">
+      </div>
+    </div>
+
+    <!-- spinner + status text shown after Google auth -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.6rem">
+      <div class="spinner" id="spinner"></div>
+      <p id="status-msg"></p>
+    </div>
+
+    <!-- hidden MikroTik login form — submitted programmatically after Google auth -->
+    <!--
+      $(link-login-only) is the bare POST endpoint (no redirect).
+      $(link-orig)       is the original destination the user wanted.
+      $(mac)             is the client's MAC address.
+      $(ip)              is the client's IP address.
+    -->
+    <form id="mt-form" method="post" action="$(link-login-only)" style="display:none">
+      <input type="hidden" name="username" id="f-username" value="">
+      <input type="hidden" name="password" id="f-password" value="">
+      <input type="hidden" name="dst"      value="$(link-orig)">
+      <input type="hidden" name="mac"      value="$(mac)">
+      <input type="hidden" name="ip"       value="$(ip)">
+    </form>
+
+  </div>
+
+  <p class="footer-note">POWERED BY MIKROTIK ROUTEROS &middot; GOOGLE OAUTH 2.0</p>
+
+  <!-- Google Identity Services library (works via simple script tag — no bundler needed) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <script>
+    // ── MikroTik error detection ──────────────────────────────────────────────
+    // MikroTik replaces $(error) in the HTML before sending it to the browser.
+    // If the raw placeholder is still present the page is being previewed
+    // locally (not served by MikroTik), so we suppress the box.
+    (function () {
+      var box = document.getElementById('error-box');
+      var txt = box.textContent.trim();
+      if (txt && txt !== '$(error)') {
+        box.style.display = 'block';
+      }
+    })();
+
+    // ── Google credential callback ────────────────────────────────────────────
+    // Called by GIS with a JWT credential after the user picks a Google account.
+    function handleGoogleCredential(response) {
+      var spinner   = document.getElementById('spinner');
+      var statusMsg = document.getElementById('status-msg');
+      var dot       = document.getElementById('status-dot');
+
+      spinner.style.display   = 'block';
+      statusMsg.textContent   = 'Verifying identity\u2026';
+      dot.className           = 'status-dot';   // cyan/green blink
+
+      try {
+        // Decode the JWT payload (base64url → JSON) — no crypto verification
+        // needed here; MikroTik/RADIUS will validate the credential server-side.
+        var parts   = response.credential.split('.');
+        var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+
+        if (!payload.email) {
+          throw new Error('Google did not return an email address.');
+        }
+
+        statusMsg.textContent = 'Connecting\u2026';
+
+        // Populate and submit the hidden MikroTik form.
+        // username = Google email
+        // password = the signed JWT id_token (your RADIUS/backend validates this)
+        document.getElementById('f-username').value = payload.email;
+        document.getElementById('f-password').value = response.credential;
+        document.getElementById('mt-form').submit();
+
+      } catch (err) {
+        spinner.style.display  = 'none';
+        statusMsg.textContent  = '';
+        dot.className          = 'status-dot offline';
+        var box                = document.getElementById('error-box');
+        box.textContent        = 'Sign-in failed: ' + (err.message || 'unknown error');
+        box.style.display      = 'block';
+      }
+    }
+  </script>
+
+</body>
+</html>

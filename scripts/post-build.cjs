@@ -36,17 +36,24 @@ function copyDir(src, dst) {
   }
 }
 
-// ── 1. Create login.html from React build output ─────────────────────────────
+// ── 1. Remove the React SPA index.html — login.html comes from public/ ────────
+// public/login.html is a self-contained static file copied by Vite into dist/.
+// The React bundle (dist/index.html) is no longer needed and must be deleted so
+// it does not overwrite the static login.html.
 
-const indexSrc  = path.join(DIST, 'index.html')
-const loginDst  = path.join(DIST, 'login.html')
+const indexSrc = path.join(DIST, 'index.html')
+const loginDst = path.join(DIST, 'login.html')
 
-if (!fs.existsSync(indexSrc)) {
-  console.error('ERROR: dist/index.html not found. Run vite build first.')
+if (fs.existsSync(indexSrc)) {
+  fs.unlinkSync(indexSrc)
+  console.log('  ✓  dist/index.html removed (login.html already provided by public/)')
+}
+
+if (!fs.existsSync(loginDst)) {
+  console.error('ERROR: dist/login.html not found. Ensure public/login.html exists.')
   process.exit(1)
 }
-fs.copyFileSync(indexSrc, loginDst)
-console.log('  ✓  index.html → login.html')
+console.log('  ✓  dist/login.html is ready (static, from public/)')
 
 // ── 2. Copy unchanged MikroTik support files from hotspot/ reference ─────────
 
